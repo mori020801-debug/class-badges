@@ -8,17 +8,23 @@
     :root{
       --bg:#0b1220; --fg:#fff;
     }
-    html,body{height:100%; margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,Segoe UI,Roboto,'Hiragino Kaku Gothic ProN',Meiryo,sans-serif;}
+    html,body{height:100%; margin:0; background:var(--bg); color:var(--fg);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,'Hiragino Kaku Gothic ProN',Meiryo,sans-serif;}
     .wrap{height:100%; display:flex; align-items:center; justify-content:center; text-align:center; padding:1rem; box-sizing:border-box;}
-    .card{width:100%; max-width:1200px;}
+    .card{width:100%; max-width:1400px; padding:0 1rem; box-sizing:border-box;}
+    /* 名前表示 */
     .name{
       font-weight:800;
-      font-size: calc(8vw + 20px);
       line-height:0.95;
       word-break:break-word;
       letter-spacing:0.02em;
+      white-space:normal;
+      margin:0 auto;
+      max-width:95%;
+      /* デフォルトはビューポート幅と高さのバランスで自動サイズ */
+      font-size: clamp(28px, 6vh + 6vw, 220px);
     }
-    .sub{font-size:calc(2.5vw + 8px); opacity:0.95; margin-top:0.5rem;}
+    .sub{font-size:calc(2.2vh + 1.5vw); opacity:0.95; margin-top:0.5rem;}
     .controls{position:fixed; left:10px; top:10px; display:flex; gap:8px; z-index:30;}
     .controls button{padding:8px 10px; border-radius:8px; border:0; background:rgba(255,255,255,0.12); color:inherit; backdrop-filter:blur(6px);}
     .hint{position:fixed; bottom:8px; width:100%; text-align:center; font-size:14px;}
@@ -26,8 +32,21 @@
     .hidden{display:none;}
     input.name-input{font-size:18px; padding:10px; width:80%; max-width:400px; border-radius:8px; border:0; outline:none;}
     .btn{margin-left:8px; padding:10px 14px; border-radius:8px; border:0;}
-    @media (orientation:portrait){
-      .name{font-size: calc(10vw + 16px);}
+
+    /* ランドスケープ専用強化（横向きでより大きくする） */
+    @media (orientation: landscape) {
+      .name{
+        /* 横向きでは画面高さを基準に大きくする。min/maxは clamp ですでに確保 */
+        font-size: clamp(36px, 12vh, 260px);
+      }
+      .sub{font-size: calc(3vh + 1vw);}
+    }
+
+    /* 小さめの画面ではボタン等を隠して表示領域を確保 */
+    @media (max-width:420px){
+      .controls{display:none;}
+      .hint{font-size:12px;}
+      .sub{font-size:14px;}
     }
   </style>
 </head>
@@ -40,7 +59,7 @@
 
   <div class="wrap" role="main">
     <div class="card">
-      <div id="nameEl" class="name">読み込み中…</div>
+      <h1 id="nameEl" class="name" aria-live="polite">読み込み中…</h1>
       <div id="subEl" class="sub">画面を横向き（ランドスケープ）にして見やすくしてください</div>
     </div>
   </div>
@@ -57,7 +76,7 @@
       <div style="font-size:20px; font-weight:700; margin-bottom:10px;">表示する名前を入力してください</div>
       <div><input id="nameInput" class="name-input" placeholder="例：山田 太郎"></div>
       <div style="margin-top:10px;"><button id="saveBtn" class="btn">保存して表示</button></div>
-      <div style="margin-top:12px; font-size:13px; opacity:0.9">※ホーム画面に追加すると次回から簡単に開けます</div>
+      <div style="margin-top:12px; font-size:13px; opacity:0.9">※ホーム画面に追加すると次回ワンタップで開けます</div>
     </div>
   </div>
 
@@ -72,12 +91,27 @@
   const saveBtn = document.getElementById('saveBtn');
 
   function getParam(k){ return new URLSearchParams(location.search).get(k); }
+  const storageKey = 'class_badge_name_v2';
+
+  function setName(n){
+    if(!n) n = '（名前が未設定）';
+    nameEl.textContent = n;
+    document.title = n + ' — 名札';
+    // 小さいデバイスで大きめに見せるために微調整
+    adjustFont();
+  }
+
+  // 画面向きチェック
   function showRotateIfNeeded(){
     if(window.innerWidth < window.innerHeight){
       rotateOverlay.classList.remove('hidden');
     } else rotateOverlay.classList.add('hidden');
   }
   window.addEventListener('resize', showRotateIfNeeded);
+  window.addEventListener('orientationchange', ()=>{
+    setTimeout(adjustFont, 150);
+    showRotateIfNeeded();
+  });
   showRotateIfNeeded();
 
   // 背景切替
@@ -85,58 +119,63 @@
   document.getElementById('bgLight').onclick = ()=>{ document.body.style.background='#ffffff'; document.body.style.color='#000'; }
   document.getElementById('bgYellow').onclick = ()=>{ document.body.style.background='#ffec3d'; document.body.style.color='#000'; }
 
-  // 名前取得ロジック：URL param > localStorage > prompt
-  const paramName = getParam('name');
-  const storageKey = 'class_badge_name_v1';
-  function setName(n){
-    if(!n) n = '（名前が未設定）';
-    nameEl.textContent = n;
-    document.title = n + ' — 名札';
-  }
-
-  if(paramName){
-    const decoded = decodeURIComponent(paramName);
-    setName(decoded);
-    try{ localStorage.setItem(storageKey, decoded); }catch(e){}
-  } else {
-    try{
-      const stored = localStorage.getItem(storageKey);
-      if(stored){
-        setName(stored);
-      } else {
-        // 表示入力フォームを出す（フルスクリーンモーダル）
-        inputOverlay.classList.remove('hidden');
-        saveBtn.onclick = ()=>{
-          const v = nameInput.value.trim();
-          if(v){
-            setName(v);
-            inputOverlay.classList.add('hidden');
-            try{ localStorage.setItem(storageKey, v); }catch(e){}
-          } else {
-            alert('名前を入力してください');
-          }
-        };
+  // 名前取得ロジック：URL param > localStorage > input
+  (function initName(){
+    const paramName = getParam('name');
+    if(paramName){
+      const decoded = decodeURIComponent(paramName);
+      setName(decoded);
+      try{ localStorage.setItem(storageKey, decoded); }catch(e){}
+    } else {
+      try{
+        const stored = localStorage.getItem(storageKey);
+        if(stored){
+          setName(stored);
+        } else {
+          inputOverlay.classList.remove('hidden');
+          saveBtn.onclick = ()=>{
+            const v = nameInput.value.trim();
+            if(v){
+              setName(v);
+              inputOverlay.classList.add('hidden');
+              try{ localStorage.setItem(storageKey, v); }catch(e){}
+            } else { alert('名前を入力してください'); }
+          };
+        }
+      } catch(e){
+        const p = prompt('表示する名前を入力してください（例：山田 太郎）');
+        setName(p);
       }
-    } catch(e){
-      // localStorage使えない場合は prompt
-      const p = prompt('表示する名前を入力してください（例：山田 太郎）');
-      setName(p);
     }
-  }
+  })();
 
-  // 長い名前の調整（縮小）
+  // フォント自動調整：名前が横幅を超える場合は縮小する
   function adjustFont(){
     const el = nameEl;
-    el.style.fontSize = ''; // reset
+    // まずランドスケープなら高さ基準で大きめに設定
+    if(window.innerWidth > window.innerHeight){
+      el.style.fontSize = Math.round(window.innerHeight * 0.20) + 'px'; // 例: 高さの20%
+    } else {
+      el.style.fontSize = Math.round(window.innerHeight * 0.12) + 'px';
+    }
+
+    // もし横幅を超える（はみ出す）ならループで縮小
+    const maxWidth = window.innerWidth * 0.95;
     let fs = parseFloat(getComputedStyle(el).fontSize);
-    const maxWidth = window.innerWidth * 0.9;
-    while(el.scrollWidth > maxWidth && fs > 12){
-      fs = fs * 0.95;
+    const minFs = 18; // 最小フォントサイズpx
+    let limit = 0;
+    while(el.scrollWidth > maxWidth && fs > minFs && limit < 30){
+      fs = fs * 0.94; // 6%ずつ縮小
       el.style.fontSize = fs + 'px';
+      limit++;
     }
   }
-  window.addEventListener('resize', adjustFont);
-  setTimeout(adjustFont,200);
+
+  // 初回調整
+  setTimeout(adjustFont, 120);
+  // 画面回転やサイズ変化で再調整
+  window.addEventListener('resize', () => { setTimeout(adjustFont, 80); });
+
 </script>
 </body>
 </html>
