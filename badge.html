@@ -22,25 +22,26 @@
       margin:0 auto;
       max-width:96%;
       font-size: clamp(36px, 12vh + 6vw, 360px);
+      cursor:pointer; /* タップで編集 */
     }
     .sub{font-size:calc(1.8vh + 1vw); opacity:0.0; margin-top:0.6rem;}
 
-    /* カラーボタン群 */
+    /* カラーボタン群（控えめ） */
     .controls{
       position:fixed;
       z-index:40;
       display:flex;
-      gap:8px;
+      gap:6px;
       align-items:center;
       justify-content:center;
-      padding:8px;
+      padding:6px;
       box-sizing:border-box;
       left:50%;
       transform:translateX(-50%);
-      top:8px; /* portrait でも上部中央に表示 */
+      top:8px;
       flex-wrap:wrap;
+      opacity:0.92;
     }
-    /* landscape では左上に寄せる */
     @media (orientation: landscape){
       .controls{ left:10px; transform:none; top:10px; }
     }
@@ -48,25 +49,27 @@
     .color-btn{
       display:flex;
       align-items:center;
-      gap:8px;
+      gap:6px;
       border:0;
-      padding:10px 12px;
-      border-radius:10px;
+      padding:8px 10px;
+      border-radius:8px;
       font-weight:700;
       cursor:pointer;
-      min-width:56px;
-      min-height:44px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      transition:transform .08s ease, box-shadow .08s ease;
+      min-width:48px;
+      min-height:36px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      transition:transform .06s ease, box-shadow .06s ease, opacity .08s;
       user-select:none;
+      background: rgba(255,255,255,0.06);
+      color: inherit;
+      font-size:14px;
     }
     .color-btn:active{ transform:translateY(1px); }
-    .swatch{ width:20px; height:20px; border-radius:6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12); }
+    .swatch{ width:16px; height:16px; border-radius:6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08); }
 
-    /* 小画面でもボタンがはみ出さないように小さめ対応 */
     @media (max-width:420px){
-      .color-btn{ padding:8px 10px; min-width:48px; min-height:40px; font-size:14px; border-radius:8px; }
-      .swatch{ width:16px; height:16px; border-radius:5px; }
+      .color-btn{ padding:7px 8px; min-width:44px; min-height:34px; font-size:13px; border-radius:7px; }
+      .swatch{ width:14px; height:14px; border-radius:5px; }
     }
 
     /* ランドスケープ用さらに大きめ表示（名前） */
@@ -76,6 +79,25 @@
       }
       .sub{font-size: calc(2.6vh + 0.8vw);}
     }
+
+    /* 右上の小さな編集/クリアボタン（目立たせない） */
+    .mini-tools{
+      position:fixed;
+      right:8px;
+      top:8px;
+      display:flex;
+      gap:6px;
+      z-index:45;
+      align-items:center;
+    }
+    .mini-btn{
+      width:36px; height:36px; border-radius:8px; border:0;
+      background: rgba(255,255,255,0.06); color:inherit; font-weight:700;
+      display:inline-flex; align-items:center; justify-content:center; cursor:pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+      font-size:14px;
+    }
+    .mini-btn:active{ transform:translateY(1px); }
 
     /* 入力モーダル */
     .overlay{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); color:#fff; z-index:50; padding:1rem; text-align:center;}
@@ -87,31 +109,31 @@
 <body>
   <!-- カラーボタン（5色） -->
   <div class="controls" role="toolbar" aria-label="背景色選択">
-    <!-- data-bg = 背景色, data-fg = 文字色 -->
     <button class="color-btn" id="btnDark" data-bg="#0b1220" data-fg="#ffffff" aria-pressed="false" aria-label="黒背景">
-      <span class="swatch" style="background:#0b1220;"></span>
-      <span class="label">黒</span>
+      <span class="swatch" style="background:#0b1220;"></span><span class="label">黒</span>
     </button>
 
     <button class="color-btn" id="btnWhite" data-bg="#ffffff" data-fg="#000000" aria-pressed="false" aria-label="白背景">
-      <span class="swatch" style="background:#ffffff; border:1px solid #ddd;"></span>
-      <span class="label">白</span>
+      <span class="swatch" style="background:#ffffff; border:1px solid #ddd;"></span><span class="label">白</span>
     </button>
 
     <button class="color-btn" id="btnYellow" data-bg="#ffec3d" data-fg="#000000" aria-pressed="false" aria-label="黄色背景">
-      <span class="swatch" style="background:#ffec3d;"></span>
-      <span class="label">黄</span>
+      <span class="swatch" style="background:#ffec3d;"></span><span class="label">黄</span>
     </button>
 
     <button class="color-btn" id="btnCyan" data-bg="#00bcd4" data-fg="#000000" aria-pressed="false" aria-label="シアン背景">
-      <span class="swatch" style="background:#00bcd4;"></span>
-      <span class="label">水</span>
+      <span class="swatch" style="background:#00bcd4;"></span><span class="label">水</span>
     </button>
 
     <button class="color-btn" id="btnOrange" data-bg="#ff7043" data-fg="#000000" aria-pressed="false" aria-label="オレンジ背景">
-      <span class="swatch" style="background:#ff7043;"></span>
-      <span class="label">橙</span>
+      <span class="swatch" style="background:#ff7043;"></span><span class="label">橙</span>
     </button>
+  </div>
+
+  <!-- 右上目立たせないツール（編集・クリア） -->
+  <div class="mini-tools" aria-hidden="false">
+    <button id="editNameBtn" class="mini-btn" title="名前を編集" aria-label="名前を編集">✎</button>
+    <button id="clearNameBtn" class="mini-btn" title="名前をクリア" aria-label="名前をクリア">×</button>
   </div>
 
   <div class="wrap" role="main">
@@ -125,8 +147,11 @@
   <div id="inputOverlay" class="overlay hidden" role="dialog" aria-modal="true">
     <div>
       <div style="font-size:20px; font-weight:700; margin-bottom:10px;">表示する名前を入力してください</div>
-      <div><input id="nameInput" class="name-input" placeholder="例：山田 太郎" aria-label="表示名"></div>
-      <div style="margin-top:10px;"><button id="saveBtn" class="btn">保存して表示</button></div>
+      <div><input id="nameInput" class="name-input" placeholder="例：山田 太郎" aria-label="表示名 (最大35文字)"></div>
+      <div style="margin-top:10px;">
+        <button id="saveBtn" class="btn">保存して表示</button>
+        <button id="cancelBtn" class="btn" style="background:rgba(255,255,255,0.08); margin-left:8px;">キャンセル</button>
+      </div>
     </div>
   </div>
 
@@ -135,26 +160,43 @@
   const inputOverlay = document.getElementById('inputOverlay');
   const nameInput = document.getElementById('nameInput');
   const saveBtn = document.getElementById('saveBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const editNameBtn = document.getElementById('editNameBtn');
+  const clearNameBtn = document.getElementById('clearNameBtn');
   const controls = document.querySelectorAll('.color-btn');
   const storageNameKey = 'class_badge_name_v3';
   const storageBgKey = 'class_badge_color_bg';
   const storageFgKey = 'class_badge_color_fg';
+  const MAXNAME = 35;
 
   function getParam(k){ return new URLSearchParams(location.search).get(k); }
 
-  // 名前表示
-  function setName(n){
-    if(!n) n = '（名前が未設定）';
-    nameEl.textContent = n;
-    document.title = n + ' — 名札';
-    adjustFont();
+  // sanitize & limit
+  function sanitizeName(raw){
+    if(!raw) return '';
+    // remove control chars
+    let s = raw.replace(/[\u0000-\u001F\u007F]/g, '').trim();
+    if(s.length > MAXNAME) s = s.slice(0, MAXNAME);
+    // remove unexpected chars but allow letters/numbers/spaces and common punctuation
+    s = s.replace(/[^\p{L}\p{N}\s\-\._]/gu, '');
+    return s;
   }
 
-  // 色変更
+  // 名前表示
+  function setName(n, persist = true){
+    const safe = sanitizeName(n) || '（名前が未設定）';
+    nameEl.textContent = safe;
+    document.title = safe + ' — 名札';
+    adjustFont();
+    if(persist){
+      try{ localStorage.setItem(storageNameKey, safe); }catch(e){}
+    }
+  }
+
+  // color
   function setColor(bg, fg, persist = true){
     document.body.style.background = bg;
     document.body.style.color = fg;
-    // Ensure name element inherits correct color style if needed
     nameEl.style.color = fg;
     if(persist){
       try{
@@ -162,7 +204,6 @@
         localStorage.setItem(storageFgKey, fg);
       }catch(e){}
     }
-    // update aria-pressed on buttons
     controls.forEach(btn=>{
       const is = (btn.getAttribute('data-bg') === bg && btn.getAttribute('data-fg') === fg);
       btn.setAttribute('aria-pressed', is ? 'true' : 'false');
@@ -180,41 +221,29 @@
 
   // 名前取得ロジック：URL param > localStorage > input
   (function initNameAndColor(){
-    // color first (apply saved or default)
     try{
       const savedBg = localStorage.getItem(storageBgKey);
       const savedFg = localStorage.getItem(storageFgKey);
       if(savedBg && savedFg){
         setColor(savedBg, savedFg, false);
       } else {
-        setColor('#0b1220', '#ffffff', false); // default
+        setColor('#0b1220', '#ffffff', false);
       }
-    }catch(e){
-      setColor('#0b1220', '#ffffff', false);
-    }
+    }catch(e){ setColor('#0b1220', '#ffffff', false); }
 
-    // name
     const paramName = getParam('name');
     if(paramName){
       const decoded = decodeURIComponent(paramName);
       setName(decoded);
-      try{ localStorage.setItem(storageNameKey, decoded); }catch(e){}
+      try{ localStorage.setItem(storageNameKey, sanitizeName(decoded)); }catch(e){}
     } else {
       try{
         const stored = localStorage.getItem(storageNameKey);
         if(stored){
-          setName(stored);
+          setName(stored, false);
         } else {
           inputOverlay.classList.remove('hidden');
           nameInput.focus();
-          saveBtn.onclick = ()=>{
-            const v = nameInput.value.trim();
-            if(v){
-              setName(v);
-              inputOverlay.classList.add('hidden');
-              try{ localStorage.setItem(storageNameKey, v); }catch(e){}
-            } else { alert('名前を入力してください'); }
-          };
         }
       } catch(e){
         const p = prompt('表示する名前を入力してください（例：山田 太郎）');
@@ -222,6 +251,41 @@
       }
     }
   })();
+
+  // 編集ボタンでモーダル表示（現在名をプリセット）
+  function openNameEditor(){
+    const current = nameEl.textContent === '（名前が未設定）' ? '' : nameEl.textContent;
+    nameInput.value = current;
+    inputOverlay.classList.remove('hidden');
+    nameInput.focus();
+  }
+  editNameBtn.addEventListener('click', openNameEditor);
+  nameEl.addEventListener('click', openNameEditor);
+
+  // クリアボタン（localStorage から削除してモーダルを開く）
+  clearNameBtn.addEventListener('click', ()=>{
+    try{
+      localStorage.removeItem(storageNameKey);
+    }catch(e){}
+    nameEl.textContent = '（名前を設定してください）';
+    inputOverlay.classList.remove('hidden');
+    nameInput.value = '';
+    nameInput.focus();
+  });
+
+  // 保存・キャンセル
+  saveBtn.addEventListener('click', ()=>{
+    const v = nameInput.value.trim();
+    if(!v){
+      alert('名前を入力してください');
+      return;
+    }
+    setName(v, true);
+    inputOverlay.classList.add('hidden');
+  });
+  cancelBtn.addEventListener('click', ()=>{
+    inputOverlay.classList.add('hidden');
+  });
 
   // フォント自動調整
   function adjustFont(){
