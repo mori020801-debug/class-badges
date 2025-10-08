@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>名札ページへ移動中…</title>
+  <!-- JSでクエリを保持してbadge.htmlにリダイレクト -->
+  <script>
+    (function(){
+      var qs = location.search || '';
+      // badge.html にクエリを付けて移動
+      location.replace('badge.html' + qs);
+    })();
+  </script>
+  <!-- JS無効の場合のフォールバック -->
+  <noscript>
+    <meta http-equiv="refresh" content="0; url=badge.html">
+  </noscript>
+</head>
+<body>
+  <p>名札ページに移動しています。自動で移動しない場合は <a href="badge.html">こちらをクリック</a> してください。</p>
+</body>
+</html>
