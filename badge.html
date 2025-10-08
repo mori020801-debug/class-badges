@@ -11,42 +11,42 @@
     html,body{height:100%; margin:0; background:var(--bg); color:var(--fg);
       font-family:system-ui,-apple-system,Segoe UI,Roboto,'Hiragino Kaku Gothic ProN',Meiryo,sans-serif;}
     .wrap{height:100%; display:flex; align-items:center; justify-content:center; text-align:center; padding:1rem; box-sizing:border-box;}
-    .card{width:100%; max-width:1400px; padding:0 1rem; box-sizing:border-box;}
-    /* 名前表示 */
+    .card{width:100%; max-width:1600px; padding:0 1rem; box-sizing:border-box;}
+    /* 名前表示（より大きく） */
     .name{
-      font-weight:800;
-      line-height:0.95;
+      font-weight:900;
+      line-height:0.94;
       word-break:break-word;
-      letter-spacing:0.02em;
+      letter-spacing:0.01em;
       white-space:normal;
       margin:0 auto;
-      max-width:95%;
-      /* デフォルトはビューポート幅と高さのバランスで自動サイズ */
-      font-size: clamp(28px, 6vh + 6vw, 220px);
+      max-width:96%;
+      /* ベースは画面高さを優先してかなり大きめに */
+      font-size: clamp(36px, 12vh + 6vw, 360px);
     }
-    .sub{font-size:calc(2.2vh + 1.5vw); opacity:0.95; margin-top:0.5rem;}
+    /* 補助テキスト（表示は小さく目立たない） */
+    .sub{font-size:calc(1.8vh + 1vw); opacity:0.9; margin-top:0.6rem;}
     .controls{position:fixed; left:10px; top:10px; display:flex; gap:8px; z-index:30;}
     .controls button{padding:8px 10px; border-radius:8px; border:0; background:rgba(255,255,255,0.12); color:inherit; backdrop-filter:blur(6px);}
-    .hint{position:fixed; bottom:8px; width:100%; text-align:center; font-size:14px;}
+    .hint{position:fixed; bottom:8px; width:100%; text-align:center; font-size:13px; opacity:0.95;}
     .overlay{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); color:#fff; z-index:40; padding:1rem; text-align:center;}
     .hidden{display:none;}
     input.name-input{font-size:18px; padding:10px; width:80%; max-width:400px; border-radius:8px; border:0; outline:none;}
     .btn{margin-left:8px; padding:10px 14px; border-radius:8px; border:0;}
 
-    /* ランドスケープ専用強化（横向きでより大きくする） */
+    /* ランドスケープ用さらに大きめ */
     @media (orientation: landscape) {
       .name{
-        /* 横向きでは画面高さを基準に大きくする。min/maxは clamp ですでに確保 */
-        font-size: clamp(36px, 12vh, 260px);
+        font-size: clamp(48px, 22vh, 420px); /* 横向きで高さを優先してより大きく */
       }
-      .sub{font-size: calc(3vh + 1vw);}
+      .sub{font-size: calc(2.6vh + 0.8vw);}
     }
 
-    /* 小さめの画面ではボタン等を隠して表示領域を確保 */
+    /* 小さめの画面は操作ボタンを隠して表示領域を確保 */
     @media (max-width:420px){
       .controls{display:none;}
       .hint{font-size:12px;}
-      .sub{font-size:14px;}
+      .sub{font-size:13px;}
     }
   </style>
 </head>
@@ -59,60 +59,40 @@
 
   <div class="wrap" role="main">
     <div class="card">
-      <h1 id="nameEl" class="name" aria-live="polite">読み込み中…</h1>
-      <div id="subEl" class="sub">画面を横向き（ランドスケープ）にして見やすくしてください</div>
+      <h1 id="nameEl" class="name" aria-live="polite">（名前を設定してください）</h1>
+      <!-- 「画面を横向きにして下さい」の文言を削除 -->
+      <div id="subEl" class="sub" aria-hidden="true"></div>
     </div>
   </div>
 
-  <div id="rotateOverlay" class="overlay hidden">
-    <div>
-      <div style="font-size:22px; font-weight:700; margin-bottom:8px;">画面を横向きにしてください</div>
-      <div style="opacity:0.95">横向きの方が見やすくなります</div>
-    </div>
-  </div>
-
-  <div id="inputOverlay" class="overlay hidden">
+  <!-- 初回入力用モーダルは残す（最初だけ名前を受け取るため） -->
+  <div id="inputOverlay" class="overlay hidden" role="dialog" aria-modal="true">
     <div>
       <div style="font-size:20px; font-weight:700; margin-bottom:10px;">表示する名前を入力してください</div>
-      <div><input id="nameInput" class="name-input" placeholder="例：山田 太郎"></div>
+      <div><input id="nameInput" class="name-input" placeholder="例：山田 太郎" aria-label="表示名"></div>
       <div style="margin-top:10px;"><button id="saveBtn" class="btn">保存して表示</button></div>
       <div style="margin-top:12px; font-size:13px; opacity:0.9">※ホーム画面に追加すると次回ワンタップで開けます</div>
     </div>
   </div>
 
-  <div class="hint">ホーム画面に追加すると次回からワンタップで開けます（iPhone：Safariの共有→「ホーム画面に追加」、Android：Chromeメニュー→「ホーム画面に追加」）。</div>
+  <div class="hint" aria-hidden="true">ホーム画面に追加すると次回ワンタップで開けます（iPhone：Safariの共有→「ホーム画面に追加」、Android：Chromeメニュー→「ホーム画面に追加」）。</div>
 
 <script>
   const nameEl = document.getElementById('nameEl');
   const subEl = document.getElementById('subEl');
-  const rotateOverlay = document.getElementById('rotateOverlay');
   const inputOverlay = document.getElementById('inputOverlay');
   const nameInput = document.getElementById('nameInput');
   const saveBtn = document.getElementById('saveBtn');
 
   function getParam(k){ return new URLSearchParams(location.search).get(k); }
-  const storageKey = 'class_badge_name_v2';
+  const storageKey = 'class_badge_name_v3';
 
   function setName(n){
     if(!n) n = '（名前が未設定）';
     nameEl.textContent = n;
     document.title = n + ' — 名札';
-    // 小さいデバイスで大きめに見せるために微調整
-    adjustFont();
+    adjustFont(); // 表示を即調整
   }
-
-  // 画面向きチェック
-  function showRotateIfNeeded(){
-    if(window.innerWidth < window.innerHeight){
-      rotateOverlay.classList.remove('hidden');
-    } else rotateOverlay.classList.add('hidden');
-  }
-  window.addEventListener('resize', showRotateIfNeeded);
-  window.addEventListener('orientationchange', ()=>{
-    setTimeout(adjustFont, 150);
-    showRotateIfNeeded();
-  });
-  showRotateIfNeeded();
 
   // 背景切替
   document.getElementById('bgDark').onclick = ()=>{ document.body.style.background='#0b1220'; document.body.style.color='#fff'; }
@@ -133,6 +113,7 @@
           setName(stored);
         } else {
           inputOverlay.classList.remove('hidden');
+          nameInput.focus();
           saveBtn.onclick = ()=>{
             const v = nameInput.value.trim();
             if(v){
@@ -149,32 +130,32 @@
     }
   })();
 
-  // フォント自動調整：名前が横幅を超える場合は縮小する
+  // フォント自動調整：名前が横幅を超える場合は縮小する／ランドスケープでは高さ優先で拡大
   function adjustFont(){
     const el = nameEl;
-    // まずランドスケープなら高さ基準で大きめに設定
+    // ランドスケープなら高さ比率を高めにして大きくする
     if(window.innerWidth > window.innerHeight){
-      el.style.fontSize = Math.round(window.innerHeight * 0.20) + 'px'; // 例: 高さの20%
+      el.style.fontSize = Math.round(window.innerHeight * 0.28) + 'px'; // 高さの28%
     } else {
-      el.style.fontSize = Math.round(window.innerHeight * 0.12) + 'px';
+      el.style.fontSize = Math.round(window.innerHeight * 0.14) + 'px'; // 縦向きは控えめ
     }
 
-    // もし横幅を超える（はみ出す）ならループで縮小
-    const maxWidth = window.innerWidth * 0.95;
+    // 横幅を越えるなら縮小ループ
+    const maxWidth = window.innerWidth * 0.96;
     let fs = parseFloat(getComputedStyle(el).fontSize);
-    const minFs = 18; // 最小フォントサイズpx
+    const minFs = 16;
     let limit = 0;
-    while(el.scrollWidth > maxWidth && fs > minFs && limit < 30){
-      fs = fs * 0.94; // 6%ずつ縮小
+    while(el.scrollWidth > maxWidth && fs > minFs && limit < 40){
+      fs = fs * 0.95;
       el.style.fontSize = fs + 'px';
       limit++;
     }
   }
 
-  // 初回調整
+  // 初回・回転・リサイズで再調整
   setTimeout(adjustFont, 120);
-  // 画面回転やサイズ変化で再調整
   window.addEventListener('resize', () => { setTimeout(adjustFont, 80); });
+  window.addEventListener('orientationchange', () => { setTimeout(adjustFont, 150); });
 
 </script>
 </body>
