@@ -24,11 +24,10 @@
       /* ベースは画面高さを優先してかなり大きめに */
       font-size: clamp(36px, 12vh + 6vw, 360px);
     }
-    /* 補助テキスト（表示は小さく目立たない） */
-    .sub{font-size:calc(1.8vh + 1vw); opacity:0.9; margin-top:0.6rem;}
+    /* 補助テキストは空にして目立たせない */
+    .sub{font-size:calc(1.8vh + 1vw); opacity:0.0; margin-top:0.6rem;}
     .controls{position:fixed; left:10px; top:10px; display:flex; gap:8px; z-index:30;}
     .controls button{padding:8px 10px; border-radius:8px; border:0; background:rgba(255,255,255,0.12); color:inherit; backdrop-filter:blur(6px);}
-    .hint{position:fixed; bottom:8px; width:100%; text-align:center; font-size:13px; opacity:0.95;}
     .overlay{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); color:#fff; z-index:40; padding:1rem; text-align:center;}
     .hidden{display:none;}
     input.name-input{font-size:18px; padding:10px; width:80%; max-width:400px; border-radius:8px; border:0; outline:none;}
@@ -45,7 +44,6 @@
     /* 小さめの画面は操作ボタンを隠して表示領域を確保 */
     @media (max-width:420px){
       .controls{display:none;}
-      .hint{font-size:12px;}
       .sub{font-size:13px;}
     }
   </style>
@@ -60,22 +58,18 @@
   <div class="wrap" role="main">
     <div class="card">
       <h1 id="nameEl" class="name" aria-live="polite">（名前を設定してください）</h1>
-      <!-- 「画面を横向きにして下さい」の文言を削除 -->
       <div id="subEl" class="sub" aria-hidden="true"></div>
     </div>
   </div>
 
-  <!-- 初回入力用モーダルは残す（最初だけ名前を受け取るため） -->
+  <!-- 初回入力用モーダル（ホーム画面説明を削除） -->
   <div id="inputOverlay" class="overlay hidden" role="dialog" aria-modal="true">
     <div>
       <div style="font-size:20px; font-weight:700; margin-bottom:10px;">表示する名前を入力してください</div>
       <div><input id="nameInput" class="name-input" placeholder="例：山田 太郎" aria-label="表示名"></div>
       <div style="margin-top:10px;"><button id="saveBtn" class="btn">保存して表示</button></div>
-      <div style="margin-top:12px; font-size:13px; opacity:0.9">※ホーム画面に追加すると次回ワンタップで開けます</div>
     </div>
   </div>
-
-  <div class="hint" aria-hidden="true">ホーム画面に追加すると次回ワンタップで開けます（iPhone：Safariの共有→「ホーム画面に追加」、Android：Chromeメニュー→「ホーム画面に追加」）。</div>
 
 <script>
   const nameEl = document.getElementById('nameEl');
