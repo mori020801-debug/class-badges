@@ -12,7 +12,7 @@
       font-family:system-ui,-apple-system,Segoe UI,Roboto,'Hiragino Kaku Gothic ProN',Meiryo,sans-serif;}
     .wrap{height:100%; display:flex; align-items:center; justify-content:center; text-align:center; padding:1rem; box-sizing:border-box;}
     .card{width:100%; max-width:1600px; padding:0 1rem; box-sizing:border-box;}
-    /* 名前表示（より大きく） */
+    /* 名前表示 */
     .name{
       font-weight:900;
       line-height:0.94;
@@ -21,38 +21,97 @@
       white-space:normal;
       margin:0 auto;
       max-width:96%;
-      /* ベースは画面高さを優先してかなり大きめに */
       font-size: clamp(36px, 12vh + 6vw, 360px);
     }
-    /* 補助テキストは空にして目立たせない */
     .sub{font-size:calc(1.8vh + 1vw); opacity:0.0; margin-top:0.6rem;}
-    .controls{position:fixed; left:10px; top:10px; display:flex; gap:8px; z-index:30;}
-    .controls button{padding:8px 10px; border-radius:8px; border:0; background:rgba(255,255,255,0.12); color:inherit; backdrop-filter:blur(6px);}
-    .overlay{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); color:#fff; z-index:40; padding:1rem; text-align:center;}
-    .hidden{display:none;}
-    input.name-input{font-size:18px; padding:10px; width:80%; max-width:400px; border-radius:8px; border:0; outline:none;}
-    .btn{margin-left:8px; padding:10px 14px; border-radius:8px; border:0;}
 
-    /* ランドスケープ用さらに大きめ */
+    /* カラーボタン群 */
+    .controls{
+      position:fixed;
+      z-index:40;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+      padding:8px;
+      box-sizing:border-box;
+      left:50%;
+      transform:translateX(-50%);
+      top:8px; /* portrait でも上部中央に表示 */
+      flex-wrap:wrap;
+    }
+    /* landscape では左上に寄せる */
+    @media (orientation: landscape){
+      .controls{ left:10px; transform:none; top:10px; }
+    }
+
+    .color-btn{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      border:0;
+      padding:10px 12px;
+      border-radius:10px;
+      font-weight:700;
+      cursor:pointer;
+      min-width:56px;
+      min-height:44px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition:transform .08s ease, box-shadow .08s ease;
+      user-select:none;
+    }
+    .color-btn:active{ transform:translateY(1px); }
+    .swatch{ width:20px; height:20px; border-radius:6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12); }
+
+    /* 小画面でもボタンがはみ出さないように小さめ対応 */
+    @media (max-width:420px){
+      .color-btn{ padding:8px 10px; min-width:48px; min-height:40px; font-size:14px; border-radius:8px; }
+      .swatch{ width:16px; height:16px; border-radius:5px; }
+    }
+
+    /* ランドスケープ用さらに大きめ表示（名前） */
     @media (orientation: landscape) {
       .name{
-        font-size: clamp(48px, 22vh, 420px); /* 横向きで高さを優先してより大きく */
+        font-size: clamp(48px, 22vh, 420px);
       }
       .sub{font-size: calc(2.6vh + 0.8vw);}
     }
 
-    /* 小さめの画面は操作ボタンを隠して表示領域を確保 */
-    @media (max-width:420px){
-      .controls{display:none;}
-      .sub{font-size:13px;}
-    }
+    /* 入力モーダル */
+    .overlay{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); color:#fff; z-index:50; padding:1rem; text-align:center;}
+    .hidden{display:none;}
+    input.name-input{font-size:18px; padding:10px; width:80%; max-width:400px; border-radius:8px; border:0; outline:none;}
+    .btn{margin-left:8px; padding:10px 14px; border-radius:8px; border:0; font-weight:700;}
   </style>
 </head>
 <body>
-  <div class="controls" aria-hidden="true">
-    <button id="bgDark">黒</button>
-    <button id="bgLight">白</button>
-    <button id="bgYellow">黄</button>
+  <!-- カラーボタン（5色） -->
+  <div class="controls" role="toolbar" aria-label="背景色選択">
+    <!-- data-bg = 背景色, data-fg = 文字色 -->
+    <button class="color-btn" id="btnDark" data-bg="#0b1220" data-fg="#ffffff" aria-pressed="false" aria-label="黒背景">
+      <span class="swatch" style="background:#0b1220;"></span>
+      <span class="label">黒</span>
+    </button>
+
+    <button class="color-btn" id="btnWhite" data-bg="#ffffff" data-fg="#000000" aria-pressed="false" aria-label="白背景">
+      <span class="swatch" style="background:#ffffff; border:1px solid #ddd;"></span>
+      <span class="label">白</span>
+    </button>
+
+    <button class="color-btn" id="btnYellow" data-bg="#ffec3d" data-fg="#000000" aria-pressed="false" aria-label="黄色背景">
+      <span class="swatch" style="background:#ffec3d;"></span>
+      <span class="label">黄</span>
+    </button>
+
+    <button class="color-btn" id="btnCyan" data-bg="#00bcd4" data-fg="#000000" aria-pressed="false" aria-label="シアン背景">
+      <span class="swatch" style="background:#00bcd4;"></span>
+      <span class="label">水</span>
+    </button>
+
+    <button class="color-btn" id="btnOrange" data-bg="#ff7043" data-fg="#000000" aria-pressed="false" aria-label="オレンジ背景">
+      <span class="swatch" style="background:#ff7043;"></span>
+      <span class="label">橙</span>
+    </button>
   </div>
 
   <div class="wrap" role="main">
@@ -62,7 +121,7 @@
     </div>
   </div>
 
-  <!-- 初回入力用モーダル（ホーム画面説明を削除） -->
+  <!-- 初回入力モーダル -->
   <div id="inputOverlay" class="overlay hidden" role="dialog" aria-modal="true">
     <div>
       <div style="font-size:20px; font-weight:700; margin-bottom:10px;">表示する名前を入力してください</div>
@@ -73,36 +132,76 @@
 
 <script>
   const nameEl = document.getElementById('nameEl');
-  const subEl = document.getElementById('subEl');
   const inputOverlay = document.getElementById('inputOverlay');
   const nameInput = document.getElementById('nameInput');
   const saveBtn = document.getElementById('saveBtn');
+  const controls = document.querySelectorAll('.color-btn');
+  const storageNameKey = 'class_badge_name_v3';
+  const storageBgKey = 'class_badge_color_bg';
+  const storageFgKey = 'class_badge_color_fg';
 
   function getParam(k){ return new URLSearchParams(location.search).get(k); }
-  const storageKey = 'class_badge_name_v3';
 
+  // 名前表示
   function setName(n){
     if(!n) n = '（名前が未設定）';
     nameEl.textContent = n;
     document.title = n + ' — 名札';
-    adjustFont(); // 表示を即調整
+    adjustFont();
   }
 
-  // 背景切替
-  document.getElementById('bgDark').onclick = ()=>{ document.body.style.background='#0b1220'; document.body.style.color='#fff'; }
-  document.getElementById('bgLight').onclick = ()=>{ document.body.style.background='#ffffff'; document.body.style.color='#000'; }
-  document.getElementById('bgYellow').onclick = ()=>{ document.body.style.background='#ffec3d'; document.body.style.color='#000'; }
+  // 色変更
+  function setColor(bg, fg, persist = true){
+    document.body.style.background = bg;
+    document.body.style.color = fg;
+    // Ensure name element inherits correct color style if needed
+    nameEl.style.color = fg;
+    if(persist){
+      try{
+        localStorage.setItem(storageBgKey, bg);
+        localStorage.setItem(storageFgKey, fg);
+      }catch(e){}
+    }
+    // update aria-pressed on buttons
+    controls.forEach(btn=>{
+      const is = (btn.getAttribute('data-bg') === bg && btn.getAttribute('data-fg') === fg);
+      btn.setAttribute('aria-pressed', is ? 'true' : 'false');
+    });
+  }
+
+  // init color buttons
+  controls.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const bg = btn.getAttribute('data-bg');
+      const fg = btn.getAttribute('data-fg');
+      setColor(bg, fg, true);
+    });
+  });
 
   // 名前取得ロジック：URL param > localStorage > input
-  (function initName(){
+  (function initNameAndColor(){
+    // color first (apply saved or default)
+    try{
+      const savedBg = localStorage.getItem(storageBgKey);
+      const savedFg = localStorage.getItem(storageFgKey);
+      if(savedBg && savedFg){
+        setColor(savedBg, savedFg, false);
+      } else {
+        setColor('#0b1220', '#ffffff', false); // default
+      }
+    }catch(e){
+      setColor('#0b1220', '#ffffff', false);
+    }
+
+    // name
     const paramName = getParam('name');
     if(paramName){
       const decoded = decodeURIComponent(paramName);
       setName(decoded);
-      try{ localStorage.setItem(storageKey, decoded); }catch(e){}
+      try{ localStorage.setItem(storageNameKey, decoded); }catch(e){}
     } else {
       try{
-        const stored = localStorage.getItem(storageKey);
+        const stored = localStorage.getItem(storageNameKey);
         if(stored){
           setName(stored);
         } else {
@@ -113,7 +212,7 @@
             if(v){
               setName(v);
               inputOverlay.classList.add('hidden');
-              try{ localStorage.setItem(storageKey, v); }catch(e){}
+              try{ localStorage.setItem(storageNameKey, v); }catch(e){}
             } else { alert('名前を入力してください'); }
           };
         }
@@ -124,17 +223,14 @@
     }
   })();
 
-  // フォント自動調整：名前が横幅を超える場合は縮小する／ランドスケープでは高さ優先で拡大
+  // フォント自動調整
   function adjustFont(){
     const el = nameEl;
-    // ランドスケープなら高さ比率を高めにして大きくする
     if(window.innerWidth > window.innerHeight){
-      el.style.fontSize = Math.round(window.innerHeight * 0.28) + 'px'; // 高さの28%
+      el.style.fontSize = Math.round(window.innerHeight * 0.28) + 'px';
     } else {
-      el.style.fontSize = Math.round(window.innerHeight * 0.14) + 'px'; // 縦向きは控えめ
+      el.style.fontSize = Math.round(window.innerHeight * 0.14) + 'px';
     }
-
-    // 横幅を越えるなら縮小ループ
     const maxWidth = window.innerWidth * 0.96;
     let fs = parseFloat(getComputedStyle(el).fontSize);
     const minFs = 16;
@@ -146,7 +242,6 @@
     }
   }
 
-  // 初回・回転・リサイズで再調整
   setTimeout(adjustFont, 120);
   window.addEventListener('resize', () => { setTimeout(adjustFont, 80); });
   window.addEventListener('orientationchange', () => { setTimeout(adjustFont, 150); });
